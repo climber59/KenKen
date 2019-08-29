@@ -29,7 +29,9 @@ investigate optimization of new game by not using 'cla'
 make numSelection() only change to custom if done by user
 -possibly with checks to evt
 
-
+Matrix generation could be done with 1:n and then just mapped to actual
+array.
+-might make the code a bit simpler
 ===================================== UI changes
 large numbers may need commas for legibility
 -generally not bad, but using 10.^(1:5) as the array is hard to read
