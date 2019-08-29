@@ -12,7 +12,7 @@
 		
 		% Has issues. The ways the tools revert to the original view/zoom
 		% seems to always go back to the original 5x5 window. Would probably
-		% need some sort or custom reset button. On large grids it is also
+		% need some sort of custom reset button. On large grids it is also
 		% fairly laggy. All text objects will still show up outside the axes.
 		% Can be fixed by giving them all the 'Clipping' 'on' property.
 		
