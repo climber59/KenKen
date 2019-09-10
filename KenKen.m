@@ -150,7 +150,7 @@ function [] = KenKen()
 	
 	% Checks if the puzzle has been completed
 	function [won] = winCheck()
-		won = nnz(userGrid)==n^2; %eveything filled in
+		won = nnz(userGrid)==n^2; %everything filled in
 		if ~won
 			return
 		end
