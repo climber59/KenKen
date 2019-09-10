@@ -2,9 +2,12 @@
 the notes don't work correctly with negatives or zeros thrown in
 -all/update notes have issues.
 
+division is broken
+-divide by zero is allowed. should it be?
+- (-1/0) = 0, but the mathcheck tries 0/-1 because it assumes the
+denominator is the smaller number
 
-
-
+need () around the blob answers
 
 
 
