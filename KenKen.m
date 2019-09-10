@@ -1,4 +1,21 @@
 %{
+userGrid() still uses 0 as a blank square
+-causes an entered 0 to be red
+-may need to switch userGrid() to storing indices for theNums
+---probably the easiest solution
+the notes don't work correctly with negatives or zeros thrown in
+
+
+
+
+
+
+
+
+
+
+
+
 ===================================== new features
 more options/controls for ui scaling
 
@@ -545,7 +562,7 @@ function [] = KenKen()
 	function [] = numSelection(src, ~, ind)
 		arrayOptions.SelectedObject = arrayCustom;
 		num = round(str2num(src.String));
-		if isempty(num) || isnan(num) || isinf(num) || num <=0
+		if isempty(num) || isnan(num) || isinf(num) %|| num <=0
 			num = nextNewNum();
 		end
 		src.String = num2str(num);
@@ -704,7 +721,7 @@ function [] = KenKen()
 	function [] = showNums() %#ok<DEFNU>
 		for r = 1:n
 			for c = 1:n
-				text(c+0.5,r+0.5,num2str(numGrid(r,c)),'FontSize',10,'HorizontalAlignment','center');
+				text(c+0.5,r+0.5,num2str(theNums(numGrid(r,c))),'FontSize',10,'HorizontalAlignment','center');
 			end
 		end
 	end
@@ -744,7 +761,7 @@ function [] = KenKen()
 				fs = fs * 0.9;
 			end
 		end
-		none = regexprep(noteString,'\d',' '); % get a blank copy of the string with only spaces
+		none = regexprep(noteString,'-|\d',' '); % get a blank copy of the string with only spaces
 		
 		for r = 1:n
 			for c = 1:n
@@ -784,7 +801,7 @@ function [] = KenKen()
 		for i = 1:length(blobs)
 			% 5 bools, [n + - * /] (n refers to a single square)
 			s = blobs(i).UserData.size;
-			num = numGrid(sub2ind([n n], blobs(i).UserData.rc(:,1), blobs(i).UserData.rc(:,2)));
+			num = theNums(numGrid(sub2ind([n n], blobs(i).UserData.rc(:,1), blobs(i).UserData.rc(:,2))));
 			if s==1
 				blobs(i).UserData.op = 1; % single num
 			elseif s==2
@@ -881,7 +898,7 @@ function [] = KenKen()
 	% not needed
 	function [g] = gridGen(n)
 		g = zeros(n);
-		g(:,1) = theNums(randperm(n));
+		g(:,1) = randperm(n);
 		g = recGen(g,1,2);
 	end
 	
@@ -899,7 +916,7 @@ function [] = KenKen()
 		end
 		good = false;
 		w = nonzeros(unique([grid(:,c),grid(r,:)'])); %all blocked options
-		e = theNums;
+		e = 1:n;
 		for i = 1:length(w)
 			e(e == w(i)) = []; % remove blocked options
 		end
