@@ -1,11 +1,4 @@
 %{
-how should subtraction work with negatives?
--with whole numbers, it's assumed that the answer comes from (max - min) of
-the two numbers to prevent negative answers. 
-
-need () around the blob answers
-
-
 ===================================== new features
 more options/controls for ui scaling
 
@@ -333,6 +326,9 @@ function [] = KenKen()
 					a = userGrid(blob.UserData.rc(1,1),blob.UserData.rc(1,2))/userGrid(blob.UserData.rc(2,1),blob.UserData.rc(2,2));
 					if abs(a) < 1
 						a = 1/a;
+					end
+					if isinf(a)
+						a = 0; % changes 1/0 to 0/1. I think it looks better than '/ Inf' as it really should be undefined
 					end
 					color = (blob.UserData.ans ~= a);
 			end
@@ -820,6 +816,8 @@ function [] = KenKen()
 					target = max(num(1)/num(2),num(2)/num(1));
 					if abs(target)<1
 						target = 1/target;
+					elseif isinf(target)
+						target = 0; % changes 1/0 to 0/1. I think it looks better than '/ Inf' as it really should be undefined
 					end
 			end
 			blobs(i).UserData.ans = target;
