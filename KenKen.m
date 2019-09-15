@@ -105,11 +105,12 @@ function [] = KenKen()
 			ca = 1:n;
 		end
 		for i = ra
-			r = nonzeros(unique(userGrid(i,:))); % nums in row
+			r = unique(userGrid(i,:)); % nums in row
+			r(isnan(r)) = [];
 			for j = ca
-				if userGrid(i,j)==0 % only update squares not filled in
-% 					[i j]
-					k = nonzeros(unique([r; userGrid(:,j)]))'; % all nums in row and column
+				if isnan(userGrid(i,j)) % only update squares not filled in
+					k = unique([r, userGrid(:,j)']); % all nums in row and column
+					k(isnan(k)) = [];
 					for k = k
 						butInd = 2 + find(theNums == k,1);
 						notesGrid(i,j).String{but(butInd).UserData.cellRow}(but(butInd).UserData.strInds) = ' ';
@@ -267,7 +268,7 @@ function [] = KenKen()
 			numPanel.Visible = 'off';
 
 			if isempty(num) % X button pressed
-				num = 0; % should only check if turning off red text			
+				num = nan; % should only check if turning off red text			
 			else
 				notesGrid(r,c).String = notesGrid(1,1).UserData.none;
 			end
@@ -323,8 +324,11 @@ function [] = KenKen()
 					color = (blob.UserData.ans ~= a);
 				case 5 % division
 					a = userGrid(blob.UserData.rc(1,1),blob.UserData.rc(1,2))/userGrid(blob.UserData.rc(2,1),blob.UserData.rc(2,2));
-					if a<1
+					if abs(a) < 1
 						a = 1/a;
+					end
+					if isinf(a)
+						a = 0; % changes 1/0 to 0/1. I think it looks better than '/ Inf' as it really should be undefined
 					end
 					color = (blob.UserData.ans ~= a);
 			end
@@ -400,7 +404,7 @@ function [] = KenKen()
 		numPanel.Position(4) = numPanel.Position(3)/cols*nR;
 		bottom = 1-1/nR;
 		for i = 1:n
-			[indI, indF] = regexp(notesGrid(1,1).UserData.all,num2str(theNums(i)));
+			[indI, indF] = regexp(notesGrid(1,1).UserData.all,[' ' num2str(theNums(i))]); % without the space in the expression, it finds the '2' in '-2'
 			j = 1;
 			while isempty(indI{j}) && j < length(indI) %in theory the j< check is unnecessary
 				j = j + 1;
@@ -415,9 +419,9 @@ function [] = KenKen()
 				'FontSize',15);
 			end
 			but(i+2).String = num2str(theNums(i));
-			but(i+2).Callback = {@numFill, num2str(theNums(i)), theNums(i), j, indI{j}:indF{j}};
+			but(i+2).Callback = {@numFill, num2str(theNums(i)), theNums(i), j, (indI{j}+1):indF{j}};
 			but(i+2).UserData.cellRow = j;
-			but(i+2).UserData.strInds = indI{j}:indF{j};
+			but(i+2).UserData.strInds = (indI{j}+1):indF{j};
 			but(i+2).Position(2) = bottom;
 			but(i+2).Position(4) = 1/nR;
 			if mod(i,cols)==0
@@ -810,6 +814,11 @@ function [] = KenKen()
 					target = prod(num);
 				case 5 % div
 					target = max(num(1)/num(2),num(2)/num(1));
+					if abs(target)<1
+						target = 1/target;
+					elseif isinf(target)
+						target = 0; % changes 1/0 to 0/1. I think it looks better than '/ Inf' as it really should be undefined
+					end
 			end
 			blobs(i).UserData.ans = target;
 		end
