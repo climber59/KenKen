@@ -1,7 +1,7 @@
 %{
-the notes don't work correctly with negatives or zeros thrown in
--all notes have issues
---especially with 0
+how should subtraction work with negatives?
+-with whole numbers, it's assumed that the answer comes from (max - min) of
+the two numbers to prevent negative answers. 
 
 need () around the blob answers
 
@@ -112,12 +112,11 @@ function [] = KenKen()
 			ca = 1:n;
 		end
 		for i = ra
-			r = nonzeros(unique(userGrid(i,:))); % nums in row
+			r = unique(userGrid(i,:)); % nums in row
 			r(isnan(r)) = [];
 			for j = ca
 				if isnan(userGrid(i,j)) % only update squares not filled in
-% 					[i j]
-					k = nonzeros(unique([r; userGrid(:,j)]))'; % all nums in row and column
+					k = unique([r, userGrid(:,j)']); % all nums in row and column
 					k(isnan(k)) = [];
 					for k = k
 						butInd = 2 + find(theNums == k,1);
