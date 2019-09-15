@@ -5,7 +5,6 @@ the notes don't work correctly with negatives or zeros thrown in
 
 need () around the blob answers
 
-using 'x' button to clear a square fills in a zero
 
 ===================================== new features
 more options/controls for ui scaling
@@ -277,7 +276,7 @@ function [] = KenKen()
 			numPanel.Visible = 'off';
 
 			if isempty(num) % X button pressed
-				num = 0; % should only check if turning off red text			
+				num = nan; % should only check if turning off red text			
 			else
 				notesGrid(r,c).String = notesGrid(1,1).UserData.none;
 			end
