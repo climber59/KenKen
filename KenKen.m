@@ -816,7 +816,8 @@ function [] = KenKen()
 					target = max(num(1)/num(2),num(2)/num(1));
 					if abs(target)<1
 						target = 1/target;
-					elseif isinf(target)
+					end
+					if isinf(target)
 						target = 0; % changes 1/0 to 0/1. I think it looks better than '/ Inf' as it really should be undefined
 					end
 			end
