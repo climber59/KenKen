@@ -1,6 +1,6 @@
 %{
 the notes don't work correctly with negatives or zeros thrown in
--all/update notes have issues
+-all notes have issues
 --especially with 0
 
 need () around the blob answers
@@ -409,7 +409,7 @@ function [] = KenKen()
 		numPanel.Position(4) = numPanel.Position(3)/cols*nR;
 		bottom = 1-1/nR;
 		for i = 1:n
-			[indI, indF] = regexp(notesGrid(1,1).UserData.all,num2str(theNums(i)));
+			[indI, indF] = regexp(notesGrid(1,1).UserData.all,[' ' num2str(theNums(i))]); % without the space in the expression, it finds the '2' in '-2'
 			j = 1;
 			while isempty(indI{j}) && j < length(indI) %in theory the j< check is unnecessary
 				j = j + 1;
@@ -424,9 +424,9 @@ function [] = KenKen()
 				'FontSize',15);
 			end
 			but(i+2).String = num2str(theNums(i));
-			but(i+2).Callback = {@numFill, num2str(theNums(i)), theNums(i), j, indI{j}:indF{j}};
+			but(i+2).Callback = {@numFill, num2str(theNums(i)), theNums(i), j, (indI{j}+1):indF{j}};
 			but(i+2).UserData.cellRow = j;
-			but(i+2).UserData.strInds = indI{j}:indF{j};
+			but(i+2).UserData.strInds = (indI{j}+1):indF{j};
 			but(i+2).Position(2) = bottom;
 			but(i+2).Position(4) = 1/nR;
 			if mod(i,cols)==0
