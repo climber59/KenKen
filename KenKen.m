@@ -1,15 +1,11 @@
 %{
 the notes don't work correctly with negatives or zeros thrown in
--all/update notes have issues.
-
-division is broken
--divide by zero is allowed. should it be?
-- (-1/0) = 0, but the mathcheck tries 0/-1 because it assumes the
-denominator is the smaller number
+-all/update notes have issues
+--especially with 0
 
 need () around the blob answers
 
-
+using 'x' button to clear a square fills in a zero
 
 ===================================== new features
 more options/controls for ui scaling
@@ -337,7 +333,7 @@ function [] = KenKen()
 					color = (blob.UserData.ans ~= a);
 				case 5 % division
 					a = userGrid(blob.UserData.rc(1,1),blob.UserData.rc(1,2))/userGrid(blob.UserData.rc(2,1),blob.UserData.rc(2,2));
-					if a<1
+					if abs(a) < 1
 						a = 1/a;
 					end
 					color = (blob.UserData.ans ~= a);
@@ -824,6 +820,9 @@ function [] = KenKen()
 					target = prod(num);
 				case 5 % div
 					target = max(num(1)/num(2),num(2)/num(1));
+					if abs(target)<1
+						target = 1/target;
+					end
 			end
 			blobs(i).UserData.ans = target;
 		end
