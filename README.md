@@ -4,3 +4,5 @@ My Version of [KenKen](https://en.wikipedia.org/wiki/KenKen) made in MATLAB. It'
 Left click to enter numbers, right click to enter notes.
 
 The popup used for entering numbers was inspired by an app named "Latkin" that is no longer available on the Apple Appstore.
+
+![](https://i.imgur.com/EEjMMKm.png)
