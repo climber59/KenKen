@@ -1,5 +1,8 @@
 %{
 ===================================== new features
+copy notes to all of blob
+-copies notes in current square to all others of the same blob
+
 more options/controls for ui scaling
 
 Export mode for printting/publish a good puzzle?
@@ -22,16 +25,15 @@ Double right-clicking counts as a left click
 -not sure if f.SelectionType can differentiate different double clicks
 
 ===================================== Programming changes
+changing tabs shouldn't necessarily close the enter tool
+-mostly comes up when trying to change its size
+
 investigate optimization of new game by not using 'cla'
 -not as important with note optimizations. 20x20 takes ~8 seconds
 -biggest slowdown atm is the matrix generation
 
 make numSelection() only change to custom if done by user
 -possibly with checks to evt
-
-Matrix generation could be done with 1:n and then just mapped to actual
-array.
--might make the code a bit simpler
 ===================================== UI changes
 large numbers may need commas for legibility
 -generally not bad, but using 10.^(1:5) as the array is hard to read
