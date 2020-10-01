@@ -1,4 +1,13 @@
 %{
+generation rules plans:
+- fewer automatic "fixes" as they are confusing
+- if a rule is broken/not allowed, disable the New Game button
+--- somewhere add a tooltip explaining the source of the problem
+- sort the numbers on new game and a separate button, prevent confusion
+- fix bug with division only and negative numbers
+--- common divisor of 2 or -2 should be fine for example
+
+
 ===================================== new features
 copy notes to all of blob
 -copies notes in current square to all others of the same blob
