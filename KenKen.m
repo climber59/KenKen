@@ -28,9 +28,6 @@ mouse wheel to change size of enter tool, like in domino theory
 Double right-clicking counts as a left click
 -not sure if f.SelectionType can differentiate different double clicks
 
-negative numbers can interfere with the regexp() used in notes
-- I've had -16 and -1 share the same indices
-
 negative numbers don't accurately limit or allow certain op rules
 - using abs() will likely handle division only checks
 
@@ -416,12 +413,14 @@ function [] = KenKen()
 		nR = ceil((n+2)/cols);
 		numPanel.Position(4) = numPanel.Position(3)/cols*nR;
 		bottom = 1-1/nR;
+		notesStr = notesGrid(1,1).UserData.all;
 		for i = 1:n
-			[indI, indF] = regexp(notesGrid(1,1).UserData.all,[' ' num2str(theNums(i))]); % without the space in the expression, it finds the '2' in '-2'
+			[indI, indF] = regexp(notesStr,[' ' num2str(theNums(i))]); % without the space in the expression, it finds the '2' in '-2'
 			j = 1;
 			while isempty(indI{j}) && j < length(indI) %in theory the j< check is unnecessary
 				j = j + 1;
 			end
+			notesStr{j}((indI{j}+1):indF{j}) = ' '; % prevents it from finding the '-1' in '-16'
 			
 			if i > length(but) - 2
 				but(i+2) = uicontrol(...
