@@ -20,9 +20,19 @@ some preset game modes?
 -powers of two, addition only
 -primes multiplication
 
+mouse wheel to change size of enter tool, like in domino theory
+- unless cursor is on the number gen ui, then it should scroll that
+
+
 ===================================== known bugs
 Double right-clicking counts as a left click
 -not sure if f.SelectionType can differentiate different double clicks
+
+negative numbers can interfere with the regexp() used in notes
+- I've had -16 and -1 share the same indices
+
+negative numbers don't accurately limit or allow certain op rules
+- using abs() will likely handle division only checks
 
 ===================================== Programming changes
 changing tabs shouldn't necessarily close the enter tool
@@ -51,6 +61,7 @@ size of ui options is dependent on the size of the figure when it first
 runs. some things look good if it's a new figure or wonky if not
 -mostly font sizes and the inital enter tool
 
+label for the prime factorization tool
 
 ===================================== Rule changes
 allow negative numbers and 0. 
