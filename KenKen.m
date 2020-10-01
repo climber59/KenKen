@@ -1,31 +1,12 @@
 %{
 generation rules plans:
-- fewer automatic "fixes" as they are confusing
-- if a rule is broken/not allowed, disable the New Game button
 --- somewhere add a tooltip explaining the source of the problem
 - sort the numbers on new game and a separate button, prevent confusion
-- fix bug with division only and negative numbers
---- common divisor of 2 or -2 should be fine for example
-- hopefully consolidate most of the checks as they are currently spread
-around several functions
-- allowedOps is somewhat redundant with *Check.Value.
---- it's main use is for checking multiple *Check.Value in a single
-condition
---- if all the rules are consolidated, it becomes less necessary
-
-arraySelection
-blobClip
-gridClip
-opSelection
-numSelection
-
-illegal gen rules:
-- division or subtraction only on blob size > 2
-- division only requires numbers in the form sort(abs(theNums)) =
-c*min.^(0:(n-1)), where min is the smallest magnitude and c is arbitrary
-- each number must be unique
 
 ===================================== new features
+is there a way to make it so when you enter a new number, it takes you to
+the next numBox?
+
 copy notes to all of blob
 -copies notes in current square to all others of the same blob
 
@@ -116,10 +97,14 @@ function [] = KenKen()
 	blobSize = [];
 	gridSize = [];
 	finished = [];
+	ngBtn = [];
 	but = [];
 	allowedOps = [];
 	numPicker = [];
 	addCheck = [];
+	subCheck = [];
+	multCheck = [];
+	divCheck = [];
 	arrayOptions = [];
 	arrayCustom = [];
 	theNums = [];
@@ -133,6 +118,60 @@ function [] = KenKen()
 	
 	figureSetup();
 	newGame();
+	
+	
+	% Checks if there are any issues with the user entered generation
+	% rules. Disables 
+	function [] = genRulesCheck()
+		ngBtn.Enable = 'on'; % assume no issues
+		
+		% check for unique numbers
+		if length(unique(numPicker.UserData)) ~= gridSize.UserData
+			numPicker.UserData
+			ngBtn.Enable = 'off';
+			'a'
+			% find the ones that aren't unique and turn them red?
+		end
+		
+		% check for legal numbers
+		for i = 1:length(numPicker.UserData)
+			if isnan(numPicker.UserData(i))...
+					|| isinf(numPicker.UserData(i))...
+					|| round(numPicker.UserData(i)) ~= numPicker.UserData(i)...
+					|| isempty(numPicker.UserData) % isempty() should be caught by previous if
+				ngBtn.Enable = 'off';
+				'b'
+				% turn that box red?
+			end
+		end
+		
+		% check that at least one operator is checked
+		if ~addCheck.Value && ~subCheck.Value && ~multCheck.Value && ~divCheck.Value
+			ngBtn.Enable = 'off';
+			'c'
+			% turn the operator panel red?
+		end
+		
+		% check blob size is 2 if trying to use - or / only
+		if ~addCheck.Value && ~multCheck.Value && (subCheck.Value || divCheck.Value) && blobSize.UserData ~= 2
+			ngBtn.Enable = 'off';
+			'd'
+			% turn the operator panel and the blob size red?
+		end
+		
+		% check sort(abs(theNums)) = c*min.^(0:(n-1)) for / only
+		if divCheck.Value && ~addCheck.Value && ~multCheck.Value && ~subCheck.Value && blobSize.UserData == 2
+			nums = sort(abs(numPicker.UserData));
+			nums = nums(2:end)./nums(1:end-1);
+			if ~all(round(nums) == nums) % each number is a factor of the number with the next largest magnitude
+				ngBtn.Enable = 'off';
+				'e'
+				% turn op panel nad the numbers red?
+			end			
+		end
+		
+	end
+	
 	
 	% Checks each note in a given box to see if it can be eliminated
 	% because of a filled in box in the same row or column
@@ -408,9 +447,13 @@ function [] = KenKen()
 		numPanel.UserData = [1 1];
 		
 		n = gridSize.UserData;
-		theNums = numPicker.UserData;
 		finished = false;
 		noteMode = false;
+		numPicker.UserData = sort(numPicker.UserData);
+		for i = 1:n
+			numBoxes(i).String = num2str(numPicker.UserData(i));
+		end
+		theNums = numPicker.UserData;
 		
 		axis(1+[0 n 0 n])
 		userGrid = nan(n);
@@ -555,85 +598,30 @@ function [] = KenKen()
 	end
 	
 	
-	% Callback when any of the operators are enabled or disabled. Ensures
-	% that at least one operator is enabled and that special requirements
-	% are met if the only operators are subtraction or division.
+	% Callback when any of the operators are enabled or disabled
 	function [] = opSelection(src, ~, op)
 		allowedOps(op) = src.Value;
-		if ~any(allowedOps) % all turned off
-			allowedOps(1) = true;
-			src.Parent.Children('+'==[src.Parent.Children.String]).Value = true;
-		elseif allowedOps(4) && all(~allowedOps(1:3)) % division only
-			% only allow if the array is all powers of x and blob size is limited to 2
-			x = numPicker.UserData;
-			x = x(2:end)./x(1:end-1);
-			if all(x(1) == x)
-				blobSize.String = '2';
-				blobClip();
-			else
-				allowedOps(1) = true;
-				addCheck.Value = true;
-			end
-		elseif allowedOps(2) && all(~allowedOps([1 3 4])) % subtraction only
-			% blob size is limited to 2
-			if ~strcmp(blobSize.String,'2')
-				allowedOps(1) = true;
-				addCheck.Value = true;
-			end
-		end
+		genRulesCheck();
 	end
 	
 	
 	% Callback when a new number is entered into the table. Numbers must be
 	% whole numbers greater than 0. Does not allow repeats. Sorts the table
 	function [] = numSelection(src, ~, ind)
-		arrayOptions.SelectedObject = arrayCustom;
-		num = round(str2num(src.String));
-		if isempty(num) || isnan(num) || isinf(num) %|| num <=0
-			num = nextNewNum();
-		end
-		src.String = num2str(num);
-		numPicker.UserData(ind) = num;
-		
-		if length(unique(numPicker.UserData)) ~= gridSize.UserData % no repeats
-			num = nextNewNum();
-			src.String = num2str(num);
+		num = str2num(src.String);
+		if ~isempty(num)
 			numPicker.UserData(ind) = num;
+		else
+			numPicker.UserData(ind) = NaN;
 		end
 		
-		sortedNums = sort(numPicker.UserData);
-		if ~all(numPicker.UserData == sortedNums)
-			for i = 1:length(sortedNums)
-				numBoxes(i).String = num2str(sortedNums(i));
-				numBoxes(i).FontSize = min(12,numBoxes(i).FontSize*numBoxes(i).Position(3)/numBoxes(i).Extent(3));
-			end
-			numPicker.UserData = sortedNums;
-		end
-		
-		
-		if allowedOps(4) && all(~allowedOps(1:3))
-			% only allow if the array is all powers of x and blob size is
-			% limited to 2
-			x = numPicker.UserData;
-			x = x(2:end)./x(1:end-1);
-			if ~all(x(1) == x)
-				allowedOps(1) = true;
-				addCheck.Value = true;
-			end
-		end
+		arrayOptions.SelectedObject = arrayCustom;
 		
 		% Font Size Check
 		src.FontSize = min(12,src.FontSize*src.Position(3)/src.Extent(3));
 		
-		function [i] = nextNewNum()
-			i = 1;
-			newNum = find(i == numPicker.UserData,1);
-			while ~isempty(newNum)
-				i = i + 1;
-				newNum = find(i == numPicker.UserData,1);
-			end
-		end
-	end	
+		genRulesCheck();
+	end
 	
 	% Callback when selecting a preset array.
 	function [] = arraySelection(~, ~, option)
@@ -653,12 +641,7 @@ function [] = KenKen()
 				% maybe turn 2^x into x^y somehow
 				updateArray(2.^(0:ng-1));
 		end
-		if (option == 1 || option == 2) && allowedOps(4) && all(~allowedOps(1:3))
-			% when switching from powers of two, make sure division isn't
-			% the only operator
-			allowedOps(1) = true;
-			addCheck.Value = true;
-		end
+		genRulesCheck();
 		
 		% Puts the new array into the table
 		function [] = updateArray(newArray)
@@ -673,7 +656,7 @@ function [] = KenKen()
 	
 	
 	% Ensures that only integers greater than 1 are ented into the 'Max
-	% Size' text box. A blank entry will be replaced by 4.
+	% Blob Size' text box. A blank entry will be replaced by 4.
 	function [] = blobClip(~,~)
 		b = round(str2num(blobSize.String));
 		if isempty(b) || isnan(b)
@@ -681,58 +664,44 @@ function [] = KenKen()
 		elseif b < 2
 			b = 2;
 		end
-		if b ~= 2 && allowedOps(2) && all(~allowedOps([1 3 4]))
-			allowedOps(1) = true;
-			addCheck.Value = true;
-		end
 		s = num2str(b);
 		blobSize.String = s;
 		blobSize.UserData = b;
+		genRulesCheck();
 	end
 	
 	
 	% Ensures that only acceptable values are entered into the 'Grid Size'
 	% text box. Min of 2. Defaults to 5 for blank entries.
 	function [] = gridClip(~,~)
-		a = gridSize.UserData;
-		b = round(str2num(gridSize.String));
-		if isempty(b) || isnan(b)
-			b = 5;
-		elseif b < 2
-			b = 2;
+		oldSize = gridSize.UserData;
+		newSize = round(str2num(gridSize.String));
+		if isempty(newSize) || isnan(newSize)
+			newSize = 5;
+		elseif newSize < 2
+			newSize = 2;
 		end
-		s = num2str(b);
+		s = num2str(newSize);
 		gridSize.String = s;
-		gridSize.UserData = b;
+		gridSize.UserData = newSize;
 		
 		% update table
-		if b < a %smaller grid
-			numPicker.UserData = numPicker.UserData(1:b);
-			for i = b+1:a
+		if newSize < oldSize %smaller grid
+			numPicker.UserData = numPicker.UserData(1:newSize);
+			for i = newSize+1:oldSize
 				numBoxes(i).Visible = 'off';
 			end
-			if b <= tableSlider.UserData
+			if newSize <= tableSlider.UserData
 				tableSlider.Visible = 'off';
 			end
-		elseif b > a
-			set = arrayOptions.SelectedObject;
-			for i = length(numBoxes)+1:b
+		elseif newSize > oldSize
+			for i = length(numBoxes)+1:newSize
 				newNumBox(i);
 			end
-			if b > tableSlider.UserData
+			if newSize > tableSlider.UserData
 				tableSlider.Visible = 'on';
 			end
-			if set == arrayCustom
-				for i = a:b
-					numSelection(numBoxes(i), 5, i); % the 5 is filler
-					if numBoxes(i).Position(2) < 0
-						numBoxes(i).Visible = 'off';
-					else
-						numBoxes(i).Visible = 'on';
-					end
-				end
-			else
-				arrayOptions.SelectedObject = set;
+			if arrayOptions.SelectedObject ~= arrayCustom
 				arraySelection(2, 4, arrayOptions.SelectedObject.Callback{2}); %2 and 4 are src/evt filler
 			end
 		end
@@ -740,6 +709,7 @@ function [] = KenKen()
 			tableSlider.SliderStep = [1/3 1]./(gridSize.UserData - tableSlider.UserData);
 		end
 		tableScroll();
+		genRulesCheck();
 	end
 	
 	
@@ -901,21 +871,32 @@ function [] = KenKen()
 	% Creates new uicontrol() objects for the array table. The builtin
 	% uitable() object handles resizing very poorly.
 	function [] = newNumBox(i)
+		num = nextNewNum();
+		numPicker.UserData(i) = num;
 		numBoxes(i) = uicontrol(...
 			'Parent',numPicker,...
 			'Units','normalized',...
 			'Style','edit',...
-			'String',num2str(i),...
+			'String',num2str(num),...
 			'UserData',i,...
 			'Position',[0 1-0.125*i 0.75 0.125],...
 			'FontSize',12,...
 			'Callback',{@numSelection, i});
-		numSelection(numBoxes(i),5,i);
+% 		numSelection(numBoxes(i),5,i);
 		if numBoxes(i).Position(2) < 0
 			numBoxes(i).Visible = 'off';
 		end
 		if ~isempty(tableSlider) && i > tableSlider.UserData
 			tableSlider.Visible = 'on';
+		end
+		
+		function [i] = nextNewNum()
+			i = 1;
+			newNum = find(i == numPicker.UserData,1);
+			while ~isempty(newNum)
+				i = i + 1;
+				newNum = find(i == numPicker.UserData,1);
+			end
 		end
 	end
 	
@@ -1114,7 +1095,7 @@ function [] = KenKen()
 		gValues.startN = 5;
 		
 		
-		ng = uicontrol(...
+		ngBtn = uicontrol(...
 			'Parent',f,...
 			'Units','normalized',...
 			'Style','pushbutton',...
@@ -1309,12 +1290,15 @@ function [] = KenKen()
 			'Callback',{@opSelection, 4},...
 			'ToolTipString','Usually cannont be only operator');
 
-		
 		numPicker = uipanel(...
 			'Parent',genOptions,...
 			'Units','normalized',...
-			'Position',[0.02 0.02, 0.43 0.5],...
-			'UserData',1:gValues.startN);
+			'Position',[0.02 0.02, 0.43 0.5]);
+% 		numPicker = uipanel(...
+% 			'Parent',genOptions,...
+% 			'Units','normalized',...
+% 			'Position',[0.02 0.02, 0.43 0.5],...
+% 			'UserData',1:gValues.startN);
 		numBoxes = gobjects(gValues.startN,1);
 		for i = 1:gValues.startN
 			newNumBox(i);
