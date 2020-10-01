@@ -6,7 +6,14 @@ generation rules plans:
 - sort the numbers on new game and a separate button, prevent confusion
 - fix bug with division only and negative numbers
 --- common divisor of 2 or -2 should be fine for example
+- hopefully consolidate most of the checks as they are currently spread
+around several functions
 
+arraySelection
+blobClip
+gridClip
+opSelection
+numSelection
 
 ===================================== new features
 copy notes to all of blob
@@ -39,6 +46,8 @@ Double right-clicking counts as a left click
 
 negative numbers don't accurately limit or allow certain op rules
 - using abs() will likely handle division only checks
+
+very large or small sizes for the enter tool may cause errors
 
 ===================================== Programming changes
 changing tabs shouldn't necessarily close the enter tool
