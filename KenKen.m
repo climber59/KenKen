@@ -8,12 +8,22 @@ generation rules plans:
 --- common divisor of 2 or -2 should be fine for example
 - hopefully consolidate most of the checks as they are currently spread
 around several functions
+- allowedOps is somewhat redundant with *Check.Value.
+--- it's main use is for checking multiple *Check.Value in a single
+condition
+--- if all the rules are consolidated, it becomes less necessary
 
 arraySelection
 blobClip
 gridClip
 opSelection
 numSelection
+
+illegal gen rules:
+- division or subtraction only on blob size > 2
+- division only requires numbers in the form sort(abs(theNums)) =
+c*min.^(0:(n-1)), where min is the smallest magnitude and c is arbitrary
+- each number must be unique
 
 ===================================== new features
 copy notes to all of blob
@@ -688,7 +698,7 @@ function [] = KenKen()
 		b = round(str2num(gridSize.String));
 		if isempty(b) || isnan(b)
 			b = 5;
-		elseif b<2
+		elseif b < 2
 			b = 2;
 		end
 		s = num2str(b);
