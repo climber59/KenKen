@@ -657,12 +657,12 @@ function [] = KenKen()
 	% Size' text box. A blank entry will be replaced by 4.
 	function [] = blobClip(~,~)
 		b = round(str2num(blobSize.String));
-		if isempty(b)
+		if isempty(b) || isnan(b)
 			b = 4;
-		elseif b<2
+		elseif b < 2
 			b = 2;
 		end
-		if b~=2 && allowedOps(2) && all(~allowedOps([1 3 4]))
+		if b ~= 2 && allowedOps(2) && all(~allowedOps([1 3 4]))
 			allowedOps(1) = true;
 			addCheck.Value = true;
 		end
@@ -677,7 +677,7 @@ function [] = KenKen()
 	function [] = gridClip(~,~)
 		a = gridSize.UserData;
 		b = round(str2num(gridSize.String));
-		if isempty(b)
+		if isempty(b) || isnan(b)
 			b = 5;
 		elseif b<2
 			b = 2;
