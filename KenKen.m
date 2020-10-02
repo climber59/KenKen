@@ -1,8 +1,4 @@
 %{
-generation rules plans:
---- somewhere add a tooltip explaining the source of the problem
-- sort the numbers on new game and a separate button, prevent confusion
-
 ===================================== new features
 is there a way to make it so when you enter a new number, it takes you to
 the next numBox?
@@ -30,6 +26,7 @@ some preset game modes?
 mouse wheel to change size of enter tool, like in domino theory
 - unless cursor is on the number gen ui, then it should scroll that
 
+button to sort entered numbers without generating a new puzzle
 
 ===================================== known bugs
 Double right-clicking counts as a left click
@@ -124,13 +121,23 @@ function [] = KenKen()
 	% rules. Disables 
 	function [] = genRulesCheck()
 		ngBtn.Enable = 'on'; % assume no issues
+		set(numBoxes,'ForegroundColor',[0 0 0]); % remove all warning messages
+		set(numBoxes,'Tooltip','');
+		addCheck.Parent.ForegroundColor = [0 0 0];
+		set(addCheck.Parent.Children,'Tooltip','');
+		blobSize.Tooltip = '';
+		blobSize.ForegroundColor = [0 0 0];
+		divCheck.Tooltip = '';
 		
 		% check for unique numbers
-		if length(unique(numPicker.UserData)) ~= gridSize.UserData
-			numPicker.UserData
+		[~,indU,indR] = unique(numPicker.UserData);
+		if length(indU) ~= gridSize.UserData
 			ngBtn.Enable = 'off';
-			'a'
-			% find the ones that aren't unique and turn them red?
+			% find the ones that aren't unique and turn them red
+			[count, ~, indC] = histcounts(indR,length(indU));
+			inds = count(indC) > 1;
+			set(numBoxes(inds),'ForegroundColor',[1 0 0]);
+			set(numBoxes(inds),'Tooltip','Repeated number');
 		end
 		
 		% check for legal numbers
@@ -140,23 +147,27 @@ function [] = KenKen()
 					|| round(numPicker.UserData(i)) ~= numPicker.UserData(i)...
 					|| isempty(numPicker.UserData) % isempty() should be caught by previous if
 				ngBtn.Enable = 'off';
-				'b'
-				% turn that box red?
+				% turn that box red
+				numBoxes(i).ForegroundColor = [1 0 0];
+				numBoxes(i).Tooltip = 'Not an integer';
 			end
 		end
 		
 		% check that at least one operator is checked
 		if ~addCheck.Value && ~subCheck.Value && ~multCheck.Value && ~divCheck.Value
 			ngBtn.Enable = 'off';
-			'c'
-			% turn the operator panel red?
+			% turn the operator panel red
+			addCheck.Parent.ForegroundColor = [1 0 0];
+			set(addCheck.Parent.Children,'Tooltip','Must select at least one');
 		end
 		
 		% check blob size is 2 if trying to use - or / only
 		if ~addCheck.Value && ~multCheck.Value && (subCheck.Value || divCheck.Value) && blobSize.UserData ~= 2
 			ngBtn.Enable = 'off';
-			'd'
-			% turn the operator panel and the blob size red?
+			% turn the operator panel and the blob size red
+			divCheck.Parent.ForegroundColor = [1 0 0];
+			blobSize.ForegroundColor = [1 0 0];
+			blobSize.Tooltip = 'Must be size 2 with selected operators';
 		end
 		
 		% check sort(abs(theNums)) = c*min.^(0:(n-1)) for / only
@@ -165,8 +176,10 @@ function [] = KenKen()
 			nums = nums(2:end)./nums(1:end-1);
 			if ~all(round(nums) == nums) % each number is a factor of the number with the next largest magnitude
 				ngBtn.Enable = 'off';
-				'e'
-				% turn op panel nad the numbers red?
+				% turn op panel nad the numbers red
+				divCheck.Parent.ForegroundColor = [1 0 0];
+				set(numBoxes,'ForegroundColor',[1 0 0]);
+				divCheck.Tooltip = sprintf('Division as the only operator requires each number to be a factor\nof the number with the next in order of ascending magnitude.\nSelect another operator or try 2^x');
 			end			
 		end
 		
@@ -1217,8 +1230,7 @@ function [] = KenKen()
 			'Callback',@blobClip,...
 			'UserData',4,...
 			'Position',[0.75 0.91 0.25 0.05],...
-			'FontSize',12,...
-			'TooltipString','Max size of each blob');
+			'FontSize',12);
 		blobLbl = uicontrol(...
 			'Parent',genOptions,...
 			'Units','normalized',...
@@ -1287,8 +1299,7 @@ function [] = KenKen()
 			'String','/',...
 			'Position',[0.375 0 0.35 0.25],...
 			'Value',true,...
-			'Callback',{@opSelection, 4},...
-			'ToolTipString','Usually cannont be only operator');
+			'Callback',{@opSelection, 4});
 
 		numPicker = uipanel(...
 			'Parent',genOptions,...
