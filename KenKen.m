@@ -170,8 +170,8 @@ function [] = KenKen()
 			blobSize.Tooltip = 'Must be size 2 with selected operators';
 		end
 		
-		% check sort(abs(theNums)) = c*min.^(0:(n-1)) for / only
-		if divCheck.Value && ~addCheck.Value && ~multCheck.Value && ~subCheck.Value && blobSize.UserData == 2
+		% division only, numbers are factors of each other
+		if divCheck.Value && ~addCheck.Value && ~multCheck.Value && ~subCheck.Value% && blobSize.UserData == 2
 			nums = sort(abs(numPicker.UserData));
 			nums = nums(2:end)./nums(1:end-1);
 			if ~all(round(nums) == nums) % each number is a factor of the number with the next largest magnitude
@@ -179,7 +179,7 @@ function [] = KenKen()
 				% turn op panel nad the numbers red
 				divCheck.Parent.ForegroundColor = [1 0 0];
 				set(numBoxes,'ForegroundColor',[1 0 0]);
-				divCheck.Tooltip = sprintf('Division as the only operator requires each number to be a factor\nof the number with the next in order of ascending magnitude.\nSelect another operator or try 2^x');
+				divCheck.Tooltip = sprintf('Division as the only operator requires each number to be a factor\nof the nex number, in order of ascending magnitude.\nSelect another operator or try 2^x');
 			end			
 		end
 		
