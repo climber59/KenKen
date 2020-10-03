@@ -2,9 +2,7 @@
 ===================================== new features
 is there a way to make it so when you enter a new number, it takes you to
 the next numBox?
-
-copy notes to all of blob
--copies notes in current square to all others of the same blob
+- probably with KeyPressFcn property
 
 more options/controls for ui scaling
 
@@ -190,6 +188,7 @@ function [] = KenKen()
 	% because of a filled in box in the same row or column
 	function [] = updateNotes(~,~,ra,ca)
 		numPanel.Visible = 'off';
+		highlight(false);
 		if nargin < 4 %if no specified ra/rc, check all notes in all squares
 			ra = 1:n;
 			ca = 1:n;
@@ -254,12 +253,25 @@ function [] = KenKen()
 		if finished
 			return
 		end
-		highlight(false); % unhighlight last box
+		
 		m = floor(ax.CurrentPoint([3, 1]));% gives (r,c)
 		if any(m<1) || any(m>n)
 			numPanel.Visible = 'off';
+			highlight(false); % unhighlight last box
 			return
 		end
+		if strcmp(f.SelectionType,'extend') % middle clicking
+			if noteMode && all(m == numPanel.UserData) && numPanel.Visible
+				% copy
+				notesGrid(1,1).UserData.clipboard = notesGrid(m(1),m(2)).String;
+			elseif isnan(userGrid(m(1),m(2))) && all(strcmp(notesGrid(m(1),m(2)).String,notesGrid(1,1).UserData.none))
+				% paste
+				notesGrid(m(1),m(2)).String = notesGrid(1,1).UserData.clipboard;
+			end
+			return
+		end
+		
+		highlight(false); % unhighlight last box
 		
 		% find x,y location to put the enter tool
 		% positioned at the right edge and with the height centered
@@ -280,7 +292,7 @@ function [] = KenKen()
 		if strcmp(f.SelectionType,'alt')
 			noteMode = true;
 			but(2).Visible = 'on';
-		else
+		else%if strcmp(f.SelectionType,'normal')
 			noteMode = false;
 			but(2).Visible = 'off';
 		end
@@ -449,6 +461,8 @@ function [] = KenKen()
 			blobs(i).UserData.opT.Color(1) = 0;
 		end
 		checkmark.Visible = 'off';
+		notesGrid(1,1).UserData.clipboard = notesGrid(1,1).UserData.all;
+		finished = false;
 	end
 	
 	% 'New' button callback. Calls functions to generate the puzzle and
@@ -781,6 +795,7 @@ function [] = KenKen()
 		end
 		notesGrid(1,1).UserData.all = noteString;
 		notesGrid(1,1).UserData.none = none;
+		notesGrid(1,1).UserData.clipboard = noteString;
 		delete(temp);
 	end
 	
